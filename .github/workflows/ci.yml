@@ -1,0 +1,43 @@
+name: Update File Hash
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+  repository_dispatch:
+    types:
+      - discordo-ci-completed # Triggered by another repository's GitHub Actions
+
+jobs:
+  update-hash:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Download ZIP file
+      run: |
+        curl -o file.zip https://nightly.link/ayn2op/discordo/workflows/ci/main/discordo_Windows_X64.zip
+
+    - name: Calculate hash of ZIP file
+      id: calculate-hash
+      run: |
+        HASH=$(sha256sum file.zip | awk '{ print $1 }')
+        echo "HASH=$HASH" >> $GITHUB_ENV
+
+    - name: Update hash in JSON file
+      run: |
+        jq --arg hash "$HASH" '.hash = $hash' bucket/discordo.json > tmp.json && mv tmp.json bucket/discordo.json
+
+    - name: Commit and push changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        if ! git diff --exit-code bucket/discordo.json; then
+          git add bucket/discordo.json
+          git commit -m "Update hash in discordo.json"
+          git push
+        else
+          echo "No changes to commit."
+        fi
