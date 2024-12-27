@@ -16,12 +16,12 @@ jobs:
 
     - name: Download ZIP file
       run: |
-        curl -o file.zip https://nightly.link/ayn2op/discordo/workflows/ci/main/discordo_Windows_X64.zip
+        curl -L -O https://nightly.link/ayn2op/discordo/workflows/ci/main/discordo_Windows_X64.zip
 
     - name: Calculate hash of ZIP file
       id: calculate-hash
       run: |
-        HASH=$(sha256sum file.zip | awk '{ print $1 }')
+        HASH=$(sha256sum discordo_Windows_X64.zip | awk '{ print $1 }')
         echo "HASH=$HASH" >> $GITHUB_ENV
 
     - name: Update hash in JSON file
