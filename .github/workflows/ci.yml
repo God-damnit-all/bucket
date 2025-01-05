@@ -4,7 +4,9 @@ on:
   schedule:
     - cron: '0 * * * *' # runs daily at midnight UTC
   workflow_dispatch: # so it can run manually
-
+  repository_dispatch:
+    types:
+      - discordo-ci-completed # Triggered by another repository's GitHub Actions
 jobs:
   update-hash:
     runs-on: ubuntu-latest
